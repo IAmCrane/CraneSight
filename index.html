@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CraneSight - Blue-Chip Sentiment Index</title>
+    <style>
+        :root {
+            --bg-main: #0b0e11;
+            --bg-card: #181a20;
+            --border-color: #2b2f36;
+            --text-primary: #ffffff;
+            --text-secondary: #848e9c;
+            --text-muted: #474d57;
+            --color-green: #02c076;
+            --color-yellow: #f8d12f;
+            --color-red: #f6465d;
+            --lbl-green: #39e19a;
+            --lbl-yellow: #fada5e;
+            --lbl-red: #ff6b7e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: #eaecef;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #ffffff 50%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .ad-placeholder {
+            background-color: #12161c;
+            border: 1px dashed var(--border-color);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .ad-top-leaderboard {
+            width: 100%;
+            max-width: 1100px;
+            height: 90px;
+            margin-bottom: 20px;
+        }
+
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ad-sidebar-sticky {
+            width: 300px;
+            height: 600px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .controls-panel {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 24px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px;
+            background-color: var(--bg-main);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--color-green);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .stock-card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .meta-block {
+            width: 150px;
+            min-width: 150px;
+        }
+
+        .ticker {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .company-name {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 4px 0 0 0;
+            line-height: 1.4;
+        }
+
+        .metrics-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .chart-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 130px;
+        }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .chart-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            background-color: var(--bg-main);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .empty-lbl {
+            color: var(--text-muted);
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+            background-color: rgba(11, 14, 17, 0.95);
+            padding: 4px;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 4px;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+
+        button.action-btn {
+            flex: 1;
+            padding: 6px 2px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        button.action-btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn-green { background-color: var(--color-green); }
+        .btn-yellow { background-color: var(--color-yellow); color: #181a20; }
+        .btn-red { background-color: var(--color-red); }
+
+        .votes-tally {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 16px;
+            display: none;
+        }
+
+        @media (max-width: 992px) {
+            .app-layout { grid-template-columns: 1fr; }
+            .ad-sidebar-sticky { width: 100%; height: 250px; position: static; margin-top: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .stock-card { flex-direction: column; align-items: flex-start; padding: 16px; }
+            .meta-block { width: 100%; min-width: unset; }
+            .metrics-wrapper { justify-content: space-between; width: 100%; gap: 16px; }
+            .chart-node { flex: 1; min-width: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CraneSight</h1>
+        <p>A live macro-perspective dashboard tracking crowd sentiment across 50 market leaders.</p>
+    </header>
+
+    <div class="ad-placeholder ad-top-leaderboard">
+        Advertisement - Responsive Leaderboard (728x90)
+    </div>
+
+    <div class="app-layout">
+        <main class="main-content">
+            <div class="controls-panel">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search 50 stocks by ticker or company name...">
+            </div>
+            
+            <div class="dashboard-container" id="dashboard"></div>
+            <div id="noResults" class="no-results">No companies found matching your search.</div>
+        </main>
+
+        <aside class="sidebar-content">
+            <div class="ad-placeholder ad-sidebar-sticky">
+                Advertisement - Sticky Sidebar Display (300x600)
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        let sentimentData = {};
+
+        const companies = [
+            { t: 'AAPL', n: 'Apple Inc.' },
+            { t: 'MSFT', n: 'Microsoft Corporation' },
+            { t: 'NVDA', n: 'NVIDIA Corporation' },
+            { t: 'AMZN', n: 'Amazon.com, Inc.' },
+            { t: 'META', n: 'Meta Platforms, Inc.' },
+            { t: 'GOOGL', n: 'Alphabet Inc.' },
+            { t: 'BRK.B', n: 'Berkshire Hathaway Inc.' },
+            { t: 'LLY', n: 'Eli Lilly and Company' },
+            { t: 'AVGO', n: 'Broadcom Inc.' },
+            { t: 'JPM', n: 'JPMorgan Chase & Co.' },
+            { t: 'TSLA', n: 'Tesla, Inc.' },
+            { t: 'WMT', n: 'Walmart Inc.' },
+            { t: 'XOM', n: 'Exxon Mobil Corporation' },
+            { t: 'V', n: 'Visa Inc.' },
+            { t: 'UNH', n: 'UnitedHealth Group Inc.' },
+            { t: 'MA', n: 'Mastercard Incorporated' },
+            { t: 'ORCL', n: 'Oracle Corporation' },
+            { t: 'PG', n: 'Procter & Gamble Co.' },
+            { t: 'COST', n: 'Costco Wholesale Corp.' },
+            { t: 'HD', n: 'The Home Depot, Inc.' },
+            { t: 'JNJ', n: 'Johnson & Johnson' },
+            { t: 'BAC', n: 'Bank of America Corp.' },
+            { t: 'NFLX', n: 'Netflix, Inc.' },
+            { t: 'MRK', n: 'Merck & Co., Inc.' },
+            { t: 'AMD', n: 'Advanced Micro Devices' },
+            { t: 'CVX', n: 'Chevron Corporation' },
+            { t: 'CRM', n: 'Salesforce, Inc.' },
+            { t: 'PEP', n: 'PepsiCo, Inc.' },
+            { t: 'KO', n: 'The Coca-Cola Company' },
+            { t: 'LIN', n: 'Linde plc' },
+            { t: 'ADBE', n: 'Adobe Inc.' },
+            { t: 'ASML', n: 'ASML Holding N.V.' },
+            { t: 'TMO', n: 'Thermo Fisher Scientific' },
+            { t: 'WFC', n: 'Wells Fargo & Company' },
+            { t: 'CSCO', n: 'Cisco Systems, Inc.' },
+            { t: 'NKE', n: 'NIKE, Inc.' },
+            { t: 'DIS', n: 'The Walt Disney Company' },
+            { t: 'INTC', n: 'Intel Corporation' },
+            { t: 'CMCSA', n: 'Comcast Corporation' },
+            { t: 'PFE', n: 'Pfizer Inc.' },
+            { t: 'VZ', n: 'Verizon Communications' },
+            { t: 'INTU', n: 'Intuit Inc.' },
+            { t: 'QCOM', n: 'QUALCOMM Incorporated' },
+            { t: 'TXN', n: 'Texas Instruments Inc.' },
+            { t: 'AMGN', n: 'Amgen Inc.' },
+            { t: 'HON', n: 'Honeywell International' },
+            { t: 'IBM', n: 'IBM Corporation' },
+            { t: 'GE', n: 'General Electric Co.' },
+            { t: 'AXP', n: 'American Express Company' },
+            { t: 'CAT', n: 'Caterpillar Inc.' }
+        ];
+
+        const config = {
+            pos: { title: 'Position', btns: [{ l: 'Buy', c: 'green', v: 1 }, { l: 'Hold', c: 'yellow', v: 2 }, { l: 'Sell', c: 'red', v: 3 }] },
+            val: { title: 'Valuation', btns: [{ l: 'Under', c: 'green', v: 1 }, { l: 'Over', c: 'red', v: 3 }] },
+            dir: { title: 'Outlook', btns: [{ l: 'Up', c: 'green', v: 1 }, { l: 'Down', c: 'red', v: 3 }] }
+        };
+
+        const colors = { 1: 'var(--lbl-green)', 2: 'var(--lbl-yellow)', 3: 'var(--lbl-red)' };
+        const bgColors = { 1: 'var(--color-green)', 2: 'var(--color-yellow)', 3: 'var(--color-red)' };
+
+        async function initDashboard() {
+            const dashboardContainer = document.getElementById('dashboard');
+            
+            dashboardContainer.innerHTML = companies.map(co => `
+                <div class="stock-card" id="card-${co.t}">
+                    <div class="meta-block">
+                        <div class="ticker">${co.t}</div>
+                        <div class="company-name">${co.n}</div>
+                    </div>
+                    <div class="metrics-wrapper">
+                        ${Object.keys(config).map(metric => `
+                            <div class="chart-node">
+                                <div class="chart-title">${config[metric].title}</div>
+                                <div class="chart-box" id="box_${co.t}_${metric}">
+                                    <div class="empty-lbl" id="lbl_${co.t}_${metric}">EMPTY</div>
+                                </div>
+                                <div class="options-row">
+                                    ${config[metric].btns.map(b => `
+                                        <button class="action-btn btn-${b.c}" data-ticker="${co.t}" data-metric="${metric}" data-val="${b.v}">${b.l}</button>
+                                    `).join('')}
+                                </div>
+                                <div class="votes-tally" id="tally_${co.t}_${metric}">Votes: 0</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            try {
+                const response = await fetch('/api/sentiment');
+                if (response.ok) {
+                    sentimentData = await response.json();
+                }
+            } catch (err) {
+                console.warn('Backend offline or unreachable. Initializing with empty state.', err);
+            }
+
+            companies.forEach(co => {
+                Object.keys(config).forEach(metric => {
+                    updateRowUI(co.t, metric);
+                });
+            });
+
+            setupEventListeners();
+        }
+
+        function updateRowUI(ticker, metric) {
+            const key = `${ticker}_${metric}`;
+            const data = sentimentData[key];
+            const box = document.getElementById(`box_${ticker}_${metric}`);
+            const lbl = document.getElementById(`lbl_${ticker}_${metric}`);
+            const tally = document.getElementById(`tally_${ticker}_${metric}`);
+
+            if (!box || !lbl || !tally) return;
+
+            if (!data || data.total === 0) {
+                box.style.background = 'var(--bg-main)';
+                lbl.innerHTML = 'EMPTY';
+                tally.innerText = 'Votes: 0';
+                return;
+            }
+
+            tally.innerText = `Votes: ${data.total}`;
+
+            const v1 = data[1] || 0;
+            const v2 = data[2] || 0;
+            const v3 = data[3] || 0;
+            const p1 = Math.round((v1 / data.total) * 100);
+            const p2 = Math.round((v2 / data.total) * 100);
+            const p3 = Math.max(0, 100 - (p1 + p2));
+
+            const gradientParts = [];
+            let accumulatedAngle = 0;
+
+            if (v1 > 0 && p1 > 0) {
+                gradientParts.push(`${bgColors[1]} ${accumulatedAngle}% ${accumulatedAngle + p1}%`);
+                accumulatedAngle += p1;
+            }
+            if (v2 > 0 && p2 > 0) {
+                gradientParts.push(`${bgColors[2]} ${accumulatedAngle}% ${accumulatedAngle + p2}%`);
+                accumulatedAngle += p2;
+            }
+            if (v3 > 0 && p3 > 0) {
+                gradientParts.push(`${bgColors[3]} ${accumulatedAngle}% 100%`);
+            }
+
+            box.style.background = gradientParts.length > 0 ? `conic-gradient(${gradientParts.join(', ')})` : 'var(--bg-main)';
+
+            const dynamicLabels = [];
+            if (v1 > 0 && p1 > 0) dynamicLabels.push(`<div style="color:${colors[1]}">${p1}%</div>`);
+            if (v2 > 0 && p2 > 0) dynamicLabels.push(`<div style="color:${colors[2]}">${p2}%</div>`);
+            if (v3 > 0 && p3 > 0) dynamicLabels.push(`<div style="color:${colors[3]}">${p3}%</div>`);
+
+            lbl.innerHTML = dynamicLabels.length > 0 ? dynamicLabels.join('') : 'EMPTY';
+        }
+
+        async function submitVote(ticker, metric, value) {
+            const key = `${ticker}_${metric}`;
+            
+            if (!sentimentData[key]) sentimentData[key] = { 1: 0, 2: 0, 3: 0, total: 0 };
+            sentimentData[key][value]++;
+            sentimentData[key].total++;
+            updateRowUI(ticker, metric);
+
+            try {
+                const response = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticker, metric, value })
+                });
+
+                if (response.ok) {
+                    const serverData = await response.json();
+                    if (serverData[key]) {
+                        sentimentData[key] = serverData[key];
+                        updateRowUI(ticker, metric);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to sync vote with backend:', err);
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('dashboard').onclick = (e) => {
+                if (e.target.classList.contains('action-btn')) {
+                    const { ticker, metric, val } = e.target.dataset;
+                    submitVote(ticker, metric, parseInt(val, 10));
+                }
+            };
+
+            const searchInput = document.getElementById('searchInput');
+            const noResults = document.getElementById('noResults');
+            const stockCardsCache = companies.map(co => ({
+                element: document.getElementById(`card-${co.t}`),
+                searchTokens: `${co.t.toLowerCase()} ${co.n.toLowerCase()}`
+            }));
+
+            searchInput.oninput = (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                stockCardsCache.forEach(card => {
+                    if (!card.element) return;
+                    if (query === '' || card.searchTokens.includes(query)) {
+                        card.element.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.element.style.display = 'none';
+                    }
+                });
+
+                noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+            };
+        }
+
+        window.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
